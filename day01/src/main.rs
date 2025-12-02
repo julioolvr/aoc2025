@@ -11,14 +11,15 @@ fn main() {
         .map(|line| Rotation::from_str(&line.unwrap()).unwrap())
         .collect();
     let mut safe = Safe::new();
-    let mut result = 0;
+    let mut part_1 = 0;
     for rotation in rotations {
         safe.rotate(rotation);
         if safe.dial == 0 {
-            result += 1;
+            part_1 += 1;
         }
     }
-    println!("Part 1: {}", result);
+    println!("Part 1: {}", part_1);
+    println!("Part 2: {}", safe.times_through_zero);
 }
 
 enum Direction {
@@ -29,6 +30,15 @@ enum Direction {
 struct Rotation {
     direction: Direction,
     distance: usize,
+}
+
+impl Rotation {
+    fn value(&self) -> isize {
+        match self.direction {
+            Direction::Left => -(self.distance as isize),
+            Direction::Right => self.distance as isize,
+        }
+    }
 }
 
 impl FromStr for Rotation {
@@ -57,26 +67,32 @@ impl FromStr for Rotation {
 
 struct Safe {
     dial: usize,
+    times_through_zero: usize,
 }
 
 impl Safe {
     fn new() -> Self {
-        Self { dial: 50 }
+        Self {
+            dial: 50,
+            times_through_zero: 0,
+        }
     }
 
     fn rotate(&mut self, rotation: Rotation) {
-        let adjusted_distance = rotation.distance % 100;
+        let new_value: isize = self.dial as isize + rotation.value();
 
-        match rotation.direction {
-            Direction::Left => {
-                if self.dial < adjusted_distance {
-                    self.dial = 100 - (adjusted_distance - self.dial);
-                } else {
-                    self.dial -= adjusted_distance;
-                }
+        if new_value > 0 {
+            self.dial = (new_value % 100) as usize;
+            self.times_through_zero += (new_value / 100) as usize;
+        } else if new_value == 0 {
+            self.dial = 0;
+            self.times_through_zero += 1;
+        } else {
+            self.times_through_zero += (new_value.abs() / 100) as usize;
+            if self.dial != 0 {
+                self.times_through_zero += 1;
             }
-
-            Direction::Right => self.dial = (self.dial + adjusted_distance) % 100,
+            self.dial = (100 - (new_value % 100).abs()) as usize % 100;
         }
     }
 }
