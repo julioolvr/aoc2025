@@ -17,42 +17,64 @@ fn main() {
         }
     }
 
-    let mut part_1 = 0;
+    let part_1 = find_removables(&coordinates).len();
+    println!("Part 1: {}", part_1);
 
-    for (x, y) in coordinates.iter() {
+    let mut part_2 = 0;
+
+    loop {
+        let removables = find_removables(&coordinates);
+
+        if removables.len() == 0 {
+            break;
+        }
+
+        part_2 += removables.len();
+        for coordinate in removables {
+            coordinates.remove(&coordinate);
+        }
+    }
+
+    println!("Part 2: {}", part_2);
+}
+
+fn find_removables(rolls: &HashSet<(isize, isize)>) -> HashSet<(isize, isize)> {
+    let mut removables = HashSet::new();
+
+    for (x, y) in rolls {
         let mut adjacents = 0;
 
-        if coordinates.contains(&(x - 1, y - 1)) {
+        if rolls.contains(&(x - 1, y - 1)) {
             adjacents += 1;
         }
-        if coordinates.contains(&(*x, y - 1)) {
+        if rolls.contains(&(*x, y - 1)) {
             adjacents += 1;
         }
-        if coordinates.contains(&(x + 1, y - 1)) {
+        if rolls.contains(&(x + 1, y - 1)) {
             adjacents += 1;
         }
-        if coordinates.contains(&(x - 1, *y)) {
+        if rolls.contains(&(x - 1, *y)) {
             adjacents += 1;
         }
-        if coordinates.contains(&(x + 1, *y)) {
+        if rolls.contains(&(x + 1, *y)) {
             adjacents += 1;
         }
-        if coordinates.contains(&(x - 1, y + 1)) {
+        if rolls.contains(&(x - 1, y + 1)) {
             adjacents += 1;
         }
-        if coordinates.contains(&(*x, y + 1)) {
+        if rolls.contains(&(*x, y + 1)) {
             adjacents += 1;
         }
-        if coordinates.contains(&(x + 1, y + 1)) {
+        if rolls.contains(&(x + 1, y + 1)) {
             adjacents += 1;
         }
 
         if adjacents < 4 {
-            part_1 += 1;
+            removables.insert((*x, *y));
         }
     }
 
-    println!("Part 1: {}", part_1);
+    return removables
 }
 
 fn read_lines() -> io::Result<io::Lines<io::BufReader<File>>> {
